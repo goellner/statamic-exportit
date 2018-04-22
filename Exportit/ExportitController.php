@@ -20,13 +20,13 @@ class ExportitController extends Controller
      *
      * @return mixed
      */
-    public function index() {
-
-
+    public function index()
+    {
         return $this->view('index');
     }
 
-    public function exportdata() {
+    public function exportdata()
+    {
         $handle = $_POST['selectedcollection'];
 
         $this->writer = Writer::createFromFileObject(new SplTempFileObject);
@@ -41,14 +41,15 @@ class ExportitController extends Controller
         $data = [
             'csv' => $this->writer
         ];
+
         return $this->view('exportdata');
-
-
     }
 
-    public function download() {
+    public function download()
+    {
         $document = File::disk('storage');
         $file = $document->get('exportit.csv');
+
         return response($file)->header('Content-Type', 'text/csv')->header('Content-Disposition', 'attachment; filename="exportit.csv"');
     }
 
@@ -63,7 +64,7 @@ class ExportitController extends Controller
         $header_data = array_keys($fieldset_content);
 
         // Adding title field, since it is not defined in fieldset
-        array_unshift($header_data, 'title' );
+        array_unshift($header_data, 'title');
 
         $this->csv_header = $header_data;
 
@@ -78,30 +79,28 @@ class ExportitController extends Controller
         $collectiondata = Entry::whereCollection($handle);
 
         $data = collect($collectiondata)->map(function ($entry) use ($header_data) {
-
-            $ret = array();
+            $ret = [];
             $entry = $entry->toArray();
 
             foreach ($header_data as $key => $value) {
-                if(array_key_exists($value, $entry)) {
+                if (array_key_exists($value, $entry)) {
                     // convert entry array to pipe delimited string
                     $entry_value = '';
-                    if(is_array($entry[$value])) {
+                    if (is_array($entry[$value])) {
                         $entry_value = implode('|', $entry[$value]);
                     } else {
                         $entry_value = $entry[$value];
                     }
 
                     $ret[] = $entry_value;
-                }
-                else {
+                } else {
                     $ret[] = '';
                 }
             }
+
             return $ret;
         })->toArray();
 
         $this->writer->insertAll($data);
-
     }
 }
