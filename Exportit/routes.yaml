@@ -1,0 +1,10 @@
+routes:
+  /:
+    as: addons.exportit
+    uses: index
+  post@exportdata:
+    uses: exportdata
+    as: exportit.exportdata
+  download:
+    uses: download
+    as: exportit.download
