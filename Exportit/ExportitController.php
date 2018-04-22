@@ -2,14 +2,14 @@
 
 namespace Statamic\Addons\Exportit;
 
-use Statamic\Extend\Controller;
-use Statamic\API\Collection;
-use Statamic\API\Fieldset;
-use Statamic\API\Entry;
-use SplTempFileObject;
+use Carbon\Carbon;
 use League\Csv\Writer;
-use Statamic\API\File;
+use SplTempFileObject;
+use Statamic\API\Entry;
+use Statamic\API\Fieldset;
+use Statamic\API\Collection;
 use Illuminate\Http\Response;
+use Statamic\Extend\Controller;
 
 class ExportitController extends Controller
 {
@@ -20,36 +20,25 @@ class ExportitController extends Controller
      *
      * @return mixed
      */
-    public function index() {
-
-
+    public function index()
+    {
         return $this->view('index');
     }
 
-    public function exportdata() {
-        $handle = $_POST['selectedcollection'];
+    public function exportdata()
+    {
+        $handle = request('selectedcollection');
+        $filename = slugify("{$handle}-".Carbon::now()->timestamp);
 
         $this->writer = Writer::createFromFileObject(new SplTempFileObject);
 
         $this->insertHeaders($handle);
         $this->insertData($handle);
 
-        // TODO: Don't save to storage, start immediate download instead.
-        $document = File::disk('storage');
-        $document->put('exportit.csv', $this->writer);
-
-        $data = [
-            'csv' => $this->writer
-        ];
-        return $this->view('exportdata');
-
-
-    }
-
-    public function download() {
-        $document = File::disk('storage');
-        $file = $document->get('exportit.csv');
-        return response($file)->header('Content-Type', 'text/csv')->header('Content-Disposition', 'attachment; filename="exportit.csv"');
+        return response((string) $this->writer, 200, [
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename={$filename}.csv",
+        ]);
     }
 
     // Creates and inserts CSV Header based on collection fieldset
@@ -63,7 +52,7 @@ class ExportitController extends Controller
         $header_data = array_keys($fieldset_content);
 
         // Adding title field, since it is not defined in fieldset
-        array_unshift($header_data, 'title' );
+        array_unshift($header_data, 'title');
 
         $this->csv_header = $header_data;
 
@@ -78,30 +67,28 @@ class ExportitController extends Controller
         $collectiondata = Entry::whereCollection($handle);
 
         $data = collect($collectiondata)->map(function ($entry) use ($header_data) {
-
-            $ret = array();
+            $ret = [];
             $entry = $entry->toArray();
 
             foreach ($header_data as $key => $value) {
-                if(array_key_exists($value, $entry)) {
+                if (array_key_exists($value, $entry)) {
                     // convert entry array to pipe delimited string
                     $entry_value = '';
-                    if(is_array($entry[$value])) {
+                    if (is_array($entry[$value])) {
                         $entry_value = implode('|', $entry[$value]);
                     } else {
                         $entry_value = $entry[$value];
                     }
 
                     $ret[] = $entry_value;
-                }
-                else {
+                } else {
                     $ret[] = '';
                 }
             }
+
             return $ret;
         })->toArray();
 
         $this->writer->insertAll($data);
-
     }
 }

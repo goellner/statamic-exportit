@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('content')
-    <form action="{{ route('exportit.exportdata') }}" method="post">
+    <form method="POST">
         {{ csrf_field() }}
 
         <div class="card flush flat-bottom">
