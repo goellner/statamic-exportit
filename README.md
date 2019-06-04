@@ -10,4 +10,9 @@ Copy Exportit folder to site/addons/
 
 Select "Export Data" in the control panel.
 
+## Donate
+
+If you liked this project and want to buy me a beer:
+
+[![Beerpay](https://img.shields.io/beerpay/goellner/statamic-exportit.svg)](https://beerpay.io/goellner/statamic-exportit)
 
