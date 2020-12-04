@@ -75,7 +75,7 @@ class ExportitController extends Controller
                     // convert entry array to pipe delimited string
                     $entry_value = '';
                     if (is_array($entry[$value])) {
-                        $entry_value = implode('|', $entry[$value]);
+                        $entry_value = implode('|', array_flatten($entry[$value]));
                     } else {
                         $entry_value = $entry[$value];
                     }
