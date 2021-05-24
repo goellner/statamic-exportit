@@ -51,8 +51,8 @@ class ExportitController extends Controller
         $fieldset_content = $fieldset->fields();
         $header_data = array_keys($fieldset_content);
 
-        // Adding title field, since it is not defined in fieldset
-        array_unshift($header_data, 'title');
+        // Explicitly adding some fields that may not be defined in fieldset
+        array_unshift($header_data, 'title', 'slug', 'date');
 
         $this->csv_header = $header_data;
 
